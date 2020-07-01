@@ -8,10 +8,10 @@
 #include <stdlib.h>
 
 #define TAM_BUFFER_READ_FILE 10
-#define TAM_DICIONARIO 26
 
 FILE *cipher;
 FILE *key;
+char last_char;
 
 FILE *open_plaintext(char nome_arq[]);
 
@@ -21,7 +21,7 @@ void close_directory();
 
 int encript(char *c, int *key);
 
-char *get_key();
+char get_key();
 
 void write_key(int *key);
 
@@ -39,7 +39,7 @@ int main() {
     if (plaintext != NULL) {
         char buffer[TAM_BUFFER_READ_FILE];
         int cifra;
-        int key;
+        char key;
 
         setup_work_directory();
 
@@ -51,7 +51,8 @@ int main() {
                 if (buffer[i] != EOF) {
                     if (buffer[i] != ' ') { //para cada caracter lido, diferente de espaço
                         key = get_key(); //gerar uma nova chave
-                        cifra = encript(&buffer[i], &key); //encritar o caractere com a chave gerada e salvar a cifra
+                        printf("%c", key);
+                        cifra = encript(&buffer[i], key); //encritar o caractere com a chave gerada e salvar a cifra
                         write_key(&key); //salvar a chave usada
                         write_cipher(&cifra); //salvar a cifra
                     }
@@ -81,6 +82,7 @@ void write_key(int *key) {
  */
 int encript(char *c, int *key) {
 //    printf("%d", *key);
+    //TODO: frazer o XOR bit a bit e retronar o valor
 }
 
 void close_directory() {
@@ -111,14 +113,15 @@ FILE *open_plaintext(char nome_arq[]) {
  * Gera uma chave randomica
  * @return a chave gerada a ser salva no arquivo
  */
-char *get_key() {
+char get_key() {
+    char key; //gerará um char para que o número de bits seja igual ao dos caracteres do texto original
+
     srand(time(NULL));
 
-    char key;
-
-    key = (char) rand() % TAM_DICIONARIO;
-
-    return &key;
+    while (key == last_char) {
+        key = (char) rand();
+    }
+    return key;
 }
 
 /**
@@ -126,5 +129,5 @@ char *get_key() {
  * @param cifra gerada a ser salva no arquivo
  */
 void write_cipher(char *cifra) {
-
+    //TODO: escrever a cifra no arquivo de cifra
 }
