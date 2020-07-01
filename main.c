@@ -9,8 +9,8 @@
 
 #define TAM_BUFFER_READ_FILE 10
 
-FILE *cipher;
-FILE *key;
+FILE *f_cipher;
+FILE *f_key;
 char last_char;
 
 FILE *open_plaintext(char nome_arq[]);
@@ -51,7 +51,7 @@ int main() {
                 if (buffer[i] != EOF) {
                     if (buffer[i] != ' ') { //para cada caracter lido, diferente de espaço
                         key = get_key(); //gerar uma nova chave
-                        cifra = encript(buffer[i], key); //encritar o caractere com a chave gerada e salvar a cifra
+                        cifra = encript(buffer[i], key); //encriptar o caractere com a chave gerada e salvar a cifra
                         write_key(&key); //salvar a chave usada
                         write_cipher(&cifra); //salvar a cifra
                     }
@@ -69,8 +69,9 @@ int main() {
  * @param key chave que foi usada na encriptação
  */
 void write_key(int *key) {
-    //fazer um append
-    //TODO: implementar a escrita da chave no arquivo key
+    printf("Recebido o caractere: %c", key);
+    putc(key, f_key);
+    //TODO: implementar a escrita da chave no arquivo f_key
 }
 
 /**
@@ -84,15 +85,13 @@ char encript(char c, char key) {
 }
 
 void close_directory() {
-    fclose(key);
-    fclose(cipher);
+    fclose(f_key);
+    fclose(f_cipher);
 }
 
 void setup_work_directory() {
-    key = fopen("key.txt", "w");
-    cipher = fopen("cipher.txt", "w");
-    //TODO: criar arquivo de cifra
-    //TODO: criar arquivo de chave
+    f_key = fopen("key.txt", "w");
+    f_cipher = fopen("cipher.txt", "w");
 }
 
 FILE *open_plaintext(char nome_arq[]) {
