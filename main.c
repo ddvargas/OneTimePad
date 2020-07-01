@@ -19,7 +19,7 @@ void setup_work_directory();
 
 void close_directory();
 
-int encript(char *c, int *key);
+char encript(char c, char key);
 
 char get_key();
 
@@ -51,8 +51,7 @@ int main() {
                 if (buffer[i] != EOF) {
                     if (buffer[i] != ' ') { //para cada caracter lido, diferente de espaço
                         key = get_key(); //gerar uma nova chave
-                        printf("%c", key);
-                        cifra = encript(&buffer[i], key); //encritar o caractere com a chave gerada e salvar a cifra
+                        cifra = encript(buffer[i], key); //encritar o caractere com a chave gerada e salvar a cifra
                         write_key(&key); //salvar a chave usada
                         write_cipher(&cifra); //salvar a cifra
                     }
@@ -80,9 +79,8 @@ void write_key(int *key) {
  * @param key chave usada para encriptar
  * @return a cifra
  */
-int encript(char *c, int *key) {
-//    printf("%d", *key);
-    //TODO: frazer o XOR bit a bit e retronar o valor
+char encript(char c, char key) {
+    return c ^ key;
 }
 
 void close_directory() {
