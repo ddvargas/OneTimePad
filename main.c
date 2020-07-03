@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <locale.h>
 
-#define TAM_BUFFER_READ_FILE 10
+#define TAM_BUFFER_READ_FILE 255
 #define TAM_DICIONARIO 52
 
 FILE *f_cipher;
@@ -26,21 +26,22 @@ char encript(char c, char key);
 
 char get_key();
 
-void write_key(int *key);
+void write_key(char key);
 
 bool on_acceptable_range(char key);
 
-void write_cipher(char *cifra);
+void write_cipher(char cifra);
 
 
 int main() {
-    setlocale(LC_ALL, "Portuguese_Brasil");
+    setlocale(LC_ALL, "");
     FILE *plaintext;
     char nome_plaintext[100];
     printf("Nome do arquivo a ser encriptado: ");
     scanf("%s", nome_plaintext);
 
     plaintext = open_plaintext(nome_plaintext);
+    srand((unsigned) time(NULL));
 
     if (plaintext != NULL) {
         char buffer[TAM_BUFFER_READ_FILE];
@@ -52,15 +53,16 @@ int main() {
         //Fluxo principal
         while (!feof(plaintext)) {
             fgets(buffer, TAM_BUFFER_READ_FILE, plaintext);
-
-            for (int i = 0; i < TAM_BUFFER_READ_FILE; ++i) {
-                if (buffer[i] != EOF) {
+            for (int i = 0; i < TAM_BUFFER_READ_FILE || !feof(plaintext); ++i) {
+                if (buffer[i] != EOF && buffer[i] != '\0' && buffer[i] != '\n') {
                     if (buffer[i] != ' ') { //para cada caracter lido, diferente de espaço
                         key = get_key(); //gerar uma nova chave
                         cifra = encript(buffer[i], key); //encriptar o caractere com a chave gerada e salvar a cifra
-                        write_key(&key); //salvar a chave usada
-                        write_cipher(&cifra); //salvar a cifra
+                        write_key(key); //salvar a chave usada
+                        write_cipher(cifra); //salvar a cifra
                     }
+                } else {
+                    break;
                 }
             }
         }
@@ -74,7 +76,7 @@ int main() {
  * Escreve a chave usada no arquivo que contém a chave
  * @param key chave que foi usada na encriptação
  */
-void write_key(int *key) {
+void write_key(char key) {
     putc(key, f_key);
 }
 
@@ -89,6 +91,10 @@ char encript(char c, char key) {
 }
 
 void close_directory() {
+    putc(EOF, f_key);
+    putc(EOF, f_cipher);
+    fflush(f_cipher);
+    fflush(f_key);
     fclose(f_key);
     fclose(f_cipher);
 }
@@ -115,12 +121,10 @@ FILE *open_plaintext(char nome_arq[]) {
  * @return a chave gerada a ser salva no arquivo
  */
 char get_key() {
-    srand((unsigned) time(NULL));
-
     char key = rand();; //gerará um char para que o número de bits seja igual ao dos caracteres do texto original
 
     while ((key == last_char) || !on_acceptable_range(key)) {
-        key = 0 + rand() % 135; //impede criar caractere acima do máximo usado (ç)
+        key = (unsigned) rand() % 135; //impede criar caractere acima do máximo usado (ç)
     }
     last_char = key;
     return key;
@@ -130,7 +134,7 @@ char get_key() {
  * Escreve no arquivo de cifra a cifra gerada com a chave
  * @param cifra gerada a ser salva no arquivo
  */
-void write_cipher(char *cifra) {
+void write_cipher(char cifra) {
     putc(cifra, f_cipher);
 }
 
