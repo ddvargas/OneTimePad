@@ -5,9 +5,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <stdbool.h>
 #include <stdlib.h>
+#include <locale.h>
 
 #define TAM_BUFFER_READ_FILE 10
+#define TAM_DICIONARIO 52
 
 FILE *f_cipher;
 FILE *f_key;
@@ -25,10 +28,13 @@ char get_key();
 
 void write_key(int *key);
 
+bool on_acceptable_range(char key);
+
 void write_cipher(char *cifra);
 
 
 int main() {
+    setlocale(LC_ALL, "Portuguese_Brasil");
     FILE *plaintext;
     char nome_plaintext[100];
     printf("Nome do arquivo a ser encriptado: ");
@@ -69,9 +75,7 @@ int main() {
  * @param key chave que foi usada na encriptação
  */
 void write_key(int *key) {
-    printf("Recebido o caractere: %c", key);
     putc(key, f_key);
-    //TODO: implementar a escrita da chave no arquivo f_key
 }
 
 /**
@@ -111,13 +115,14 @@ FILE *open_plaintext(char nome_arq[]) {
  * @return a chave gerada a ser salva no arquivo
  */
 char get_key() {
-    char key; //gerará um char para que o número de bits seja igual ao dos caracteres do texto original
+    srand((unsigned) time(NULL));
 
-    srand(time(NULL));
+    char key = rand();; //gerará um char para que o número de bits seja igual ao dos caracteres do texto original
 
-    while (key == last_char) {
-        key = (char) rand();
+    while ((key == last_char) || !on_acceptable_range(key)) {
+        key = 0 + rand() % 135; //impede criar caractere acima do máximo usado (ç)
     }
+    last_char = key;
     return key;
 }
 
@@ -126,5 +131,17 @@ char get_key() {
  * @param cifra gerada a ser salva no arquivo
  */
 void write_cipher(char *cifra) {
-    //TODO: escrever a cifra no arquivo de cifra
+    putc(cifra, f_cipher);
+}
+
+/**
+ * Verifica se o caractere gerado está no intervalo aceitável da Tabela UTF-8
+ * @param c caractere a ser verificado
+ * @return true caso esteja no intervalo e false caso não esteja no intervalo
+ */
+bool on_acceptable_range(char c) {
+    if (c > 64 && c < 91) return true;
+    if (c > 96 && c < 123) return true;
+    if (c == 128 || c == 135) return true;
+    return false;
 }
