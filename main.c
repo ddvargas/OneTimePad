@@ -16,7 +16,7 @@ FILE *f_cipher;
 FILE *f_key;
 char last_char;
 
-FILE *open_plaintext(char nome_arq[]);
+FILE *open_file(char *nome_arq, char mode);
 
 void setup_work_directory();
 
@@ -38,9 +38,10 @@ int main() {
     setlocale(LC_ALL, "");
 
     // declaração de variáveis
-    FILE *plaintext;
-    FILE *cipher;
-    char nome_plaintext[100];
+    FILE *f_plaintext;
+    FILE *f_cipher;
+    FILE *f_key;
+    char nome_arquivo[100];
     int opcao_menu_principal;
 
     printf(" ************ Bem vindo ao One-Time Pad ************\n");
@@ -51,12 +52,12 @@ int main() {
         switch (opcao_menu_principal) {
             case 1: //encriptar
                 printf("Nome do arquivo a ser encriptado: ");
-                scanf("%s", nome_plaintext);
+                scanf("%s", nome_arquivo);
 
-                plaintext = open_plaintext(nome_plaintext);
+                f_plaintext = open_file(nome_arquivo, "r");
                 srand((unsigned) time(NULL));
 
-                if (plaintext != NULL) {
+                if (f_plaintext != NULL) {
                     char buffer[TAM_BUFFER_READ_FILE];
                     int cifra;
                     char key;
@@ -64,9 +65,9 @@ int main() {
                     setup_work_directory();
 
                     //Fluxo principal
-                    while (!feof(plaintext)) {
-                        fgets(buffer, TAM_BUFFER_READ_FILE, plaintext);
-                        for (int i = 0; i < TAM_BUFFER_READ_FILE || !feof(plaintext); ++i) {
+                    while (!feof(f_plaintext)) {
+                        fgets(buffer, TAM_BUFFER_READ_FILE, f_plaintext);
+                        for (int i = 0; i < TAM_BUFFER_READ_FILE || !feof(f_plaintext); ++i) {
                             if (buffer[i] != EOF && buffer[i] != '\0' && buffer[i] != '\n') {
                                 if (buffer[i] != ' ') { //para cada caracter lido, diferente de espaço
                                     key = get_key(); //gerar uma nova chave
@@ -81,7 +82,7 @@ int main() {
                         }
                     }
                     printf("Encriptação concluída\n");
-                    fclose(plaintext);
+                    fclose(f_plaintext);
                     close_directory();
                 } else {
                     printf("Arquivo não encontrado.\n");
@@ -89,6 +90,38 @@ int main() {
                 }
                 break;
             case 2: //decriptar
+                printf("Arquivo da chave: ");
+                scanf("%s", nome_arquivo);
+
+                f_key = open_file(nome_arquivo, "r");
+
+                printf("Arquivo com a cifra: ");
+                scanf("%s", nome_arquivo);
+
+                f_cipher = open_file(nome_arquivo, "r");
+                f_plaintext = open_file("plainText", "w");
+
+                if (f_cipher != NULL) {
+                    if (f_key != NULL) {
+                        char buffer_key[TAM_BUFFER_READ_FILE];
+                        char buffer_cipher[TAM_BUFFER_READ_FILE];
+                        char message;
+
+                        while (!feof(f_cipher) && !feof(f_key)) {
+                            fgets(buffer_cipher, TAM_BUFFER_READ_FILE, f_cipher);
+                            fgets(buffer_key, TAM_BUFFER_READ_FILE, f_key);
+
+                            for (int i = 0; i < TAM_BUFFER_READ_FILE; i++) {
+                                if (buffer_key[i] != EOF && buffer_key[i] != '\0' && buffer_key[i] != '\n') {
+                                    //para cada caractere decriptá-lo
+                                    //message = decript();
+                                    //escrever no arquivo plantext
+                                }
+                            }
+                        }
+
+                    }
+                }
                 break;
             case 0: //sair
                 printf("Bye\n");
@@ -131,15 +164,15 @@ void setup_work_directory() {
     f_cipher = fopen("cipher.txt", "w");
 }
 
-FILE *open_plaintext(char nome_arq[]) {
+FILE *open_file(char *nome_arq, char mode) {
     if (nome_arq != NULL) {
         if (strlen(nome_arq) > 0) {
-            return fopen(strcat(nome_arq, ".txt"), "r");
+            return fopen(strcat(nome_arq, ".txt"), mode);
         } else {
-            printf("nomeArquivoinvalido");
+            printf("Nome do arquivo inválido.\n");
         }
     } else {
-        printf("nomeArquivo nulo");
+        printf("Nome do arquivo inválido.\n");
     }
 }
 
