@@ -34,42 +34,71 @@ void write_cipher(char cifra);
 
 
 int main() {
+    //Ajustes iniciais do ambiente
     setlocale(LC_ALL, "");
+
+    // declaração de variáveis
     FILE *plaintext;
+    FILE *cipher;
     char nome_plaintext[100];
-    printf("Nome do arquivo a ser encriptado: ");
-    scanf("%s", nome_plaintext);
+    int opcao_menu_principal;
 
-    plaintext = open_plaintext(nome_plaintext);
-    srand((unsigned) time(NULL));
+    printf(" ************ Bem vindo ao One-Time Pad ************\n");
+    do {
+        printf("\n1-Encriptar  2-Decriptar  0-Sair\nSelecione: ");
+        scanf("%d", &opcao_menu_principal);
 
-    if (plaintext != NULL) {
-        char buffer[TAM_BUFFER_READ_FILE];
-        int cifra;
-        char key;
+        switch (opcao_menu_principal) {
+            case 1: //encriptar
+                printf("Nome do arquivo a ser encriptado: ");
+                scanf("%s", nome_plaintext);
 
-        setup_work_directory();
+                plaintext = open_plaintext(nome_plaintext);
+                srand((unsigned) time(NULL));
 
-        //Fluxo principal
-        while (!feof(plaintext)) {
-            fgets(buffer, TAM_BUFFER_READ_FILE, plaintext);
-            for (int i = 0; i < TAM_BUFFER_READ_FILE || !feof(plaintext); ++i) {
-                if (buffer[i] != EOF && buffer[i] != '\0' && buffer[i] != '\n') {
-                    if (buffer[i] != ' ') { //para cada caracter lido, diferente de espaço
-                        key = get_key(); //gerar uma nova chave
-                        cifra = encript(buffer[i], key); //encriptar o caractere com a chave gerada e salvar a cifra
-                        write_key(key); //salvar a chave usada
-                        write_cipher(cifra); //salvar a cifra
+                if (plaintext != NULL) {
+                    char buffer[TAM_BUFFER_READ_FILE];
+                    int cifra;
+                    char key;
+
+                    setup_work_directory();
+
+                    //Fluxo principal
+                    while (!feof(plaintext)) {
+                        fgets(buffer, TAM_BUFFER_READ_FILE, plaintext);
+                        for (int i = 0; i < TAM_BUFFER_READ_FILE || !feof(plaintext); ++i) {
+                            if (buffer[i] != EOF && buffer[i] != '\0' && buffer[i] != '\n') {
+                                if (buffer[i] != ' ') { //para cada caracter lido, diferente de espaço
+                                    key = get_key(); //gerar uma nova chave
+                                    cifra = encript(buffer[i],
+                                                    key); //encriptar o caractere com a chave gerada e salvar a cifra
+                                    write_key(key); //salvar a chave usada
+                                    write_cipher(cifra); //salvar a cifra
+                                }
+                            } else {
+                                break;
+                            }
+                        }
                     }
+                    printf("Encriptação concluída\n");
+                    fclose(plaintext);
+                    close_directory();
                 } else {
-                    break;
+                    printf("Arquivo não encontrado.\n");
+                    opcao_menu_principal = 1;
                 }
-            }
+                break;
+            case 2: //decriptar
+                break;
+            case 0: //sair
+                printf("Bye\n");
+                break;
+            default:
+                printf("Opção desconhecida digite um número do menú\n");
         }
+    } while (opcao_menu_principal != 0);
 
-    }
-    fclose(plaintext);
-    close_directory();
+
 }
 
 /**
@@ -91,8 +120,6 @@ char encript(char c, char key) {
 }
 
 void close_directory() {
-    putc(EOF, f_key);
-    putc(EOF, f_cipher);
     fflush(f_cipher);
     fflush(f_key);
     fclose(f_key);
