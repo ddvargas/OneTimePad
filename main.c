@@ -134,8 +134,6 @@ int main() {
                 printf("Opção desconhecida digite um número do menú\n");
         }
     } while (opcao_menu_principal != 0);
-
-
 }
 
 /**
@@ -143,7 +141,9 @@ int main() {
  * @param key chave que foi usada na encriptação
  */
 void write_key(char key) {
-    putc(key, f_key);
+    if (key != NULL) {
+        putc(key, f_key);
+    }
 }
 
 /**
@@ -214,11 +214,16 @@ void setup_work_directory() {
  * @return ponteiro do arquivo
  */
 FILE *open_file(char nome_arq[], char mode[]) {
-    //TODO: melhorar a função de abertura do arquivo para abrir um arquivo válido e só retornar quando for válido
+    FILE *f;
     if (nome_arq != NULL) {
         if (strlen(nome_arq) > 0) {
-            return fopen(strcat(nome_arq, ".txt"), mode);
-            //TODO: testar aqui se foi ou não possível abrir os arquivos e mostrar as mensagens
+            do {
+                f = fopen(strcat(nome_arq, ".txt"), mode);
+                if (f == NULL) {
+                    printf("Não foi possível localizar/abrir o arquivo\nDigite o nome do arquivo: ");
+                    scanf("%s", nome_arq);
+                }
+            } while (f == NULL);
         } else {
             printf("Nome do arquivo inválido.\n");
         }
