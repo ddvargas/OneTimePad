@@ -14,6 +14,7 @@
 
 FILE *f_cipher;
 FILE *f_key;
+FILE *f_plaintext;
 char last_char;
 
 FILE *open_file(char *nome_arq, char mode);
@@ -32,15 +33,15 @@ bool on_acceptable_range(char key);
 
 void write_cipher(char cifra);
 
+void write_plaintext(char plaintext);
+
+char decript(char cifra, char key);
 
 int main() {
     //Ajustes iniciais do ambiente
     setlocale(LC_ALL, "");
 
     // declaração de variáveis
-    FILE *f_plaintext;
-    FILE *f_cipher;
-    FILE *f_key;
     char nome_arquivo[100];
     int opcao_menu_principal;
 
@@ -93,19 +94,23 @@ int main() {
                 printf("Arquivo da chave: ");
                 scanf("%s", nome_arquivo);
 
-                f_key = open_file(nome_arquivo, "r");
+                f_key = open_file(nome_arquivo, 'r');
 
                 printf("Arquivo com a cifra: ");
                 scanf("%s", nome_arquivo);
 
-                f_cipher = open_file(nome_arquivo, "r");
-                f_plaintext = open_file("plainText", "w");
+                f_cipher = open_file(nome_arquivo, 'r');
+
+                printf("Defina o nome do arquivo de saida: ");
+                scanf("%s", nome_arquivo);
+
+                f_plaintext = open_file(nome_arquivo, 'w');
+
 
                 if (f_cipher != NULL) {
                     if (f_key != NULL) {
                         char buffer_key[TAM_BUFFER_READ_FILE];
                         char buffer_cipher[TAM_BUFFER_READ_FILE];
-                        char message;
 
                         while (!feof(f_cipher) && !feof(f_key)) {
                             fgets(buffer_cipher, TAM_BUFFER_READ_FILE, f_cipher);
@@ -113,9 +118,9 @@ int main() {
 
                             for (int i = 0; i < TAM_BUFFER_READ_FILE; i++) {
                                 if (buffer_key[i] != EOF && buffer_key[i] != '\0' && buffer_key[i] != '\n') {
-                                    //para cada caractere decriptá-lo
-                                    //message = decript();
-                                    //escrever no arquivo plantext
+                                    write_plaintext(decript(buffer_cipher[i], buffer_key[i]));
+                                } else {
+                                    break;
                                 }
                             }
                         }
@@ -143,6 +148,14 @@ void write_key(char key) {
 }
 
 /**
+ * Função que recebe um caractere e escreve-o no arquivo de saída do plaintext
+ * @param c caractere a ser escrito
+ */
+void write_plaintext(char c) {
+    putc(c, f_plaintext);
+}
+
+/**
  * Faz a cifra de um caractere usando uma chave
  * @param c caractere a ser encritado
  * @param key chave usada para encriptar
@@ -150,6 +163,10 @@ void write_key(char key) {
  */
 char encript(char c, char key) {
     return c ^ key;
+}
+
+char decript(char cifra, char key) {
+    return cifra ^ key;
 }
 
 void close_directory() {
@@ -160,14 +177,14 @@ void close_directory() {
 }
 
 void setup_work_directory() {
-    f_key = fopen("key.txt", "w");
-    f_cipher = fopen("cipher.txt", "w");
+    f_key = fopen("key.txt", 'w');
+    f_cipher = fopen("cipher.txt", 'w');
 }
 
 FILE *open_file(char *nome_arq, char mode) {
     if (nome_arq != NULL) {
         if (strlen(nome_arq) > 0) {
-            return fopen(strcat(nome_arq, ".txt"), mode);
+            return fopen(strcat(nome_arq, ".txt"), &mode);
         } else {
             printf("Nome do arquivo inválido.\n");
         }
