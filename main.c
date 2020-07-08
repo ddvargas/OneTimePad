@@ -47,7 +47,7 @@ int main() {
 
     printf("\n\n************ Bem vindo ao One-Time Pad ************\n");
     do {
-        printf("1-Encriptar  2-Decriptar  0-Sair\nSelecione: ");
+        printf("\n1-Encriptar  2-Decriptar  0-Sair\nSelecione: ");
         scanf("%d", &opcao_menu_principal);
 
         switch (opcao_menu_principal) {
@@ -92,38 +92,38 @@ int main() {
             case 2: //decriptar
                 printf("Arquivo da chave: ");
                 scanf("%s", nome_arquivo);
-
                 f_key = open_file(nome_arquivo, "r");
 
-                printf("Arquivo com a cifra: ");
-                scanf("%s", nome_arquivo);
+                if (f_key != NULL) {
+                    printf("Arquivo com a cifra: ");
+                    scanf("%s", nome_arquivo);
+                    f_cipher = open_file(nome_arquivo, "r");
 
-                f_cipher = open_file(nome_arquivo, "r");
+                    if (f_cipher != NULL) {
+                        printf("Defina o nome do arquivo de saida: ");
+                        scanf("%s", nome_arquivo);
 
-                printf("Defina o nome do arquivo de saida: ");
-                scanf("%s", nome_arquivo);
+                        f_plaintext = open_file(nome_arquivo, "w");
 
-                f_plaintext = open_file(nome_arquivo, "w");
+                        if (f_plaintext != NULL) {
+                            char buffer_key[TAM_BUFFER_READ_FILE];
+                            char buffer_cipher[TAM_BUFFER_READ_FILE];
 
+                            while (!feof(f_cipher) && !feof(f_key)) {
+                                fgets(buffer_cipher, TAM_BUFFER_READ_FILE, f_cipher);
+                                fgets(buffer_key, TAM_BUFFER_READ_FILE, f_key);
 
-                if (f_cipher != NULL) {
-                    if (f_key != NULL) {
-                        char buffer_key[TAM_BUFFER_READ_FILE];
-                        char buffer_cipher[TAM_BUFFER_READ_FILE];
-
-                        while (!feof(f_cipher) && !feof(f_key)) {
-                            fgets(buffer_cipher, TAM_BUFFER_READ_FILE, f_cipher);
-                            fgets(buffer_key, TAM_BUFFER_READ_FILE, f_key);
-
-                            for (int i = 0; i < TAM_BUFFER_READ_FILE; i++) {
-                                if (buffer_key[i] != EOF && buffer_key[i] != '\0' && buffer_key[i] != '\n') {
-                                    write_plaintext(decript(buffer_cipher[i], buffer_key[i]));
-                                } else {
-                                    break;
+                                for (int i = 0; i < TAM_BUFFER_READ_FILE; i++) {
+                                    if (buffer_key[i] != EOF && buffer_key[i] != '\0' && buffer_key[i] != '\n') {
+                                        write_plaintext(decript(buffer_cipher[i], buffer_key[i]));
+                                    } else {
+                                        break;
+                                    }
                                 }
                             }
+                            close_directory();
+                            printf("Decriptação concluída, verifique a mensagem em %s\n", nome_arquivo);
                         }
-
                     }
                 }
                 break;
@@ -151,7 +151,9 @@ void write_key(char key) {
  * @param c caractere a ser escrito
  */
 void write_plaintext(char c) {
-    putc(c, f_plaintext);
+    if (c != NULL) {
+        putc(c, f_plaintext);
+    }
 }
 
 /**
@@ -161,11 +163,21 @@ void write_plaintext(char c) {
  * @return a cifra
  */
 char encript(char c, char key) {
-    return c ^ key;
+    if (c != NULL && key != NULL) {
+        return c ^ key;
+    }
 }
 
+/**
+ * Decripta um caractere usando a chave
+ * @param cifra caractere vindo da cifra
+ * @param key caractere da chave correspondente à cifra
+ * @return o caractere resultante da decriptação
+ */
 char decript(char cifra, char key) {
-    return cifra ^ key;
+    if (cifra != NULL && key != NULL) {
+        return cifra ^ key;
+    }
 }
 
 /**
@@ -186,15 +198,27 @@ void close_directory() {
     }
 }
 
+/**
+ * Abre e cria os arquivos necessarios para encriptar. Cria o arquivo de cifra e de chave, sobreescreve
+ * caso já existam.
+ */
 void setup_work_directory() {
     f_key = fopen("key.txt", "w");
     f_cipher = fopen("cipher.txt", "w");
 }
 
+/**
+ * Abre um arquivo para usar dentro do programa já enviando
+ * @param nome_arq nome do arquivo que se deseja abrr sem a extensão
+ * @param mode modo de abertura
+ * @return ponteiro do arquivo
+ */
 FILE *open_file(char nome_arq[], char mode[]) {
+    //TODO: melhorar a função de abertura do arquivo para abrir um arquivo válido e só retornar quando for válido
     if (nome_arq != NULL) {
         if (strlen(nome_arq) > 0) {
             return fopen(strcat(nome_arq, ".txt"), mode);
+            //TODO: testar aqui se foi ou não possível abrir os arquivos e mostrar as mensagens
         } else {
             printf("Nome do arquivo inválido.\n");
         }
@@ -222,7 +246,9 @@ char get_key() {
  * @param cifra gerada a ser salva no arquivo
  */
 void write_cipher(char cifra) {
-    putc(cifra, f_cipher);
+    if (cifra != NULL) {
+        putc(cifra, f_cipher);
+    }
 }
 
 /**
@@ -231,8 +257,10 @@ void write_cipher(char cifra) {
  * @return true caso esteja no intervalo e false caso não esteja no intervalo
  */
 bool on_acceptable_range(char c) {
-    if (c > 64 && c < 91) return true;
-    if (c > 96 && c < 123) return true;
-    if (c == 128 || c == 135) return true;
+    if (c != NULL) {
+        if (c > 64 && c < 91) return true;
+        if (c > 96 && c < 123) return true;
+        if (c == 128 || c == 135) return true;
+    }
     return false;
 }
