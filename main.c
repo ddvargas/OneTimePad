@@ -17,7 +17,7 @@ FILE *f_key;
 FILE *f_plaintext;
 char last_char;
 
-FILE *open_file(char *nome_arq, char mode);
+FILE *open_file(char nome_arq[], char mode[]);
 
 void setup_work_directory();
 
@@ -45,9 +45,9 @@ int main() {
     char nome_arquivo[100];
     int opcao_menu_principal;
 
-    printf(" ************ Bem vindo ao One-Time Pad ************\n");
+    printf("\n\n************ Bem vindo ao One-Time Pad ************\n");
     do {
-        printf("\n1-Encriptar  2-Decriptar  0-Sair\nSelecione: ");
+        printf("1-Encriptar  2-Decriptar  0-Sair\nSelecione: ");
         scanf("%d", &opcao_menu_principal);
 
         switch (opcao_menu_principal) {
@@ -83,7 +83,6 @@ int main() {
                         }
                     }
                     printf("Encriptação concluída\n");
-                    fclose(f_plaintext);
                     close_directory();
                 } else {
                     printf("Arquivo não encontrado.\n");
@@ -94,17 +93,17 @@ int main() {
                 printf("Arquivo da chave: ");
                 scanf("%s", nome_arquivo);
 
-                f_key = open_file(nome_arquivo, 'r');
+                f_key = open_file(nome_arquivo, "r");
 
                 printf("Arquivo com a cifra: ");
                 scanf("%s", nome_arquivo);
 
-                f_cipher = open_file(nome_arquivo, 'r');
+                f_cipher = open_file(nome_arquivo, "r");
 
                 printf("Defina o nome do arquivo de saida: ");
                 scanf("%s", nome_arquivo);
 
-                f_plaintext = open_file(nome_arquivo, 'w');
+                f_plaintext = open_file(nome_arquivo, "w");
 
 
                 if (f_cipher != NULL) {
@@ -169,22 +168,33 @@ char decript(char cifra, char key) {
     return cifra ^ key;
 }
 
+/**
+ * Fecha os arquivos sendo usados pelo programa
+ */
 void close_directory() {
-    fflush(f_cipher);
-    fflush(f_key);
-    fclose(f_key);
-    fclose(f_cipher);
+    if (f_cipher != NULL) {
+        fflush(f_cipher);
+        fclose(f_cipher);
+    }
+    if (f_plaintext != NULL) {
+        fflush(f_plaintext);
+        fclose(f_plaintext);
+    }
+    if (f_key != NULL) {
+        fflush(f_key);
+        fclose(f_key);
+    }
 }
 
 void setup_work_directory() {
-    f_key = fopen("key.txt", 'w');
-    f_cipher = fopen("cipher.txt", 'w');
+    f_key = fopen("key.txt", "w");
+    f_cipher = fopen("cipher.txt", "w");
 }
 
-FILE *open_file(char *nome_arq, char mode) {
+FILE *open_file(char nome_arq[], char mode[]) {
     if (nome_arq != NULL) {
         if (strlen(nome_arq) > 0) {
-            return fopen(strcat(nome_arq, ".txt"), &mode);
+            return fopen(strcat(nome_arq, ".txt"), mode);
         } else {
             printf("Nome do arquivo inválido.\n");
         }
